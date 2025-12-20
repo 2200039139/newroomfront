@@ -1053,60 +1053,46 @@ const RoommateExpenseTracker = () => {
           )}
         </div>
         
-       {/* Quick Action Buttons */}
-<div className={`quick-actions ${isQuickOpen ? 'open' : ''}`}>
-
-  {/* FAB Toggle Button (Visible always) */}
-  <button
-    className="quick-action-btn fab-toggle"
-    onClick={() => setIsQuickOpen(prev => !prev)}
-    title="Quick Actions"
-  >
-    +
-  </button>
-
-  {/* Action Buttons */}
-  <button 
-    className="quick-action-btn"
-    onClick={() => handleTabChange('expenses')}
-    title="Add Expense"
-  >
-    <FaReceipt />
-  </button>
-
-  <button 
-    className="quick-action-btn"
-    onClick={() => handleTabChange('roommates')}
-    title="Add Roommate"
-  >
-    <FaUserPlus />
-  </button>
-
-  <button 
-    className="quick-action-btn"
-    onClick={() => handleTabChange('splits')}
-    title="View Balances"
-  >
-    <FaBalanceScale />
-  </button>
-
-  <button 
-    className="quick-action-btn"
-    onClick={() => handleTabChange('settlements')}
-    title="Settlements"
-  >
-    <FaExchangeAlt />
-  </button>
-
-  <button 
-    className="quick-action-btn"
-    onClick={handleRefresh}
-    title="Refresh Data"
-  >
-    <FaSync className={isRefreshing ? 'spin' : ''} />
-  </button>
-
-</div>
+        {/* Quick Action Buttons */}
+        <div className="quick-actions">
+          <button 
+            className="quick-action-btn"
+            onClick={() => handleTabChange('expenses')}
+            title="Add Expense"
+          >
+            <FaReceipt />
+          </button>
+          <button 
+            className="quick-action-btn"
+            onClick={() => handleTabChange('roommates')}
+            title="Add Roommate"
+          >
+            <FaUserPlus />
+          </button>
+          <button 
+            className="quick-action-btn"
+            onClick={() => handleTabChange('splits')}
+            title="View Balances"
+          >
+            <FaBalanceScale />
+          </button>
+          <button 
+            className="quick-action-btn"
+            onClick={() => handleTabChange('settlements')}
+            title="Settlements"
+          >
+            <FaExchangeAlt />
+          </button>
+          <button 
+            className="quick-action-btn"
+            onClick={handleRefresh}
+            title="Refresh Data"
+          >
+            <FaSync className={isRefreshing ? 'spin' : ''} />
+          </button>
+        </div>
+      </div>
+    </div>
 
   );
 };
