@@ -1,0 +1,599 @@
+/* Roommates Section */
+.section-container {
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  transition: all 0.3s ease;
+}
+
+.section-container h2 {
+  margin: 0 0 25px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  background: linear-gradient(45deg, #2c3e50, #3498db);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(52, 152, 219, 0.2);
+}
+
+/* Add Roommate Form */
+.add-roommate-form {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  animation: slideUp 0.4s ease-out;
+}
+
+.add-roommate-form input {
+  flex: 1;
+  min-width: 250px;
+  padding: 14px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  color: #2c3e50;
+  background: #f8f9fa;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.add-roommate-form input:focus {
+  border-color: #4CAF50;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  transform: translateY(-2px);
+}
+
+.add-roommate-form input::placeholder {
+  color: #95a5a6;
+  font-weight: 500;
+}
+
+.add-button {
+  padding: 14px 35px;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.add-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(76, 175, 80, 0.4);
+}
+
+.add-button:active {
+  transform: translateY(-1px);
+}
+
+.add-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.add-button:hover::before {
+  left: 100%;
+}
+
+/* Roommate List */
+.roommate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: fadeIn 0.5s ease-out 0.2s both;
+}
+
+.roommate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 14px;
+  border-left: 5px solid #4CAF50;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.roommate-card:nth-child(odd) {
+  border-left-color: #2196F3;
+  background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+}
+
+.roommate-card:nth-child(even) {
+  border-left-color: #4CAF50;
+}
+
+.roommate-card:nth-child(3n) {
+  border-left-color: #FF9800;
+  background: linear-gradient(135deg, #f8f9fa, #fff3e0);
+}
+
+.roommate-card:nth-child(4n) {
+  border-left-color: #9C27B0;
+  background: linear-gradient(135deg, #f8f9fa, #f3e5f5);
+}
+
+.roommate-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-with-name {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.roommate-card:hover .avatar {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.avatar-with-name span {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: 0.5px;
+}
+
+/* Remove Button */
+.remove-button {
+  padding: 10px 25px;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 12px rgba(255, 65, 108, 0.25);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.remove-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
+}
+
+.remove-button:active {
+  transform: translateY(0);
+}
+
+.remove-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.remove-button:hover::before {
+  left: 100%;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 50px 30px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 14px;
+  border: 2px dashed #bdc3c7;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.empty-state p {
+  font-size: 18px;
+  color: #7f8c8d;
+  margin: 0 0 15px 0;
+  font-weight: 500;
+}
+
+.empty-state .hint {
+  font-size: 14px;
+  color: #95a5a6;
+  font-style: italic;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    border-color: #bdc3c7;
+  }
+  50% {
+    border-color: #4CAF50;
+  }
+  100% {
+    border-color: #bdc3c7;
+  }
+}
+
+/* Staggered animation for roommate cards */
+.roommate-card:nth-child(1) { animation-delay: 0.1s; }
+.roommate-card:nth-child(2) { animation-delay: 0.2s; }
+.roommate-card:nth-child(3) { animation-delay: 0.3s; }
+.roommate-card:nth-child(4) { animation-delay: 0.4s; }
+.roommate-card:nth-child(5) { animation-delay: 0.5s; }
+.roommate-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .section-container {
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .section-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+  
+  .add-roommate-form {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+  
+  .add-roommate-form input {
+    min-width: 100%;
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+  
+  .add-button {
+    width: 100%;
+    padding: 12px 25px;
+    font-size: 15px;
+  }
+  
+  .roommate-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    padding: 18px;
+  }
+  
+  .avatar-with-name {
+    justify-content: flex-start;
+  }
+  
+  .avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
+  
+  .avatar-with-name span {
+    font-size: 16px;
+  }
+  
+  .remove-button {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .empty-state {
+    padding: 40px 20px;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+  }
+  
+  .empty-state .hint {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .section-container {
+    padding: 18px 15px;
+    border-radius: 12px;
+  }
+  
+  .section-container h2 {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+  
+  .add-roommate-form {
+    margin-bottom: 20px;
+  }
+  
+  .add-roommate-form input {
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+  
+  .add-button {
+    padding: 11px 20px;
+    font-size: 14px;
+  }
+  
+  .roommate-card {
+    padding: 16px;
+  }
+  
+  .avatar-with-name {
+    gap: 15px;
+  }
+  
+  .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+  }
+  
+  .avatar-with-name span {
+    font-size: 15px;
+  }
+  
+  .remove-button {
+    padding: 9px 18px;
+    font-size: 12px;
+  }
+  
+  .empty-state {
+    padding: 35px 18px;
+  }
+  
+  .empty-state p {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 400px) {
+  .section-container {
+    padding: 15px 12px;
+  }
+  
+  .section-container h2 {
+    font-size: 20px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .avatar-with-name span {
+    font-size: 14px;
+  }
+  
+  .roommate-card {
+    padding: 14px;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .section-container {
+    padding: 22px;
+  }
+  
+  .add-roommate-form {
+    gap: 12px;
+  }
+  
+  .add-roommate-form input {
+    min-width: 200px;
+    padding: 13px 18px;
+  }
+  
+  .add-button {
+    padding: 13px 30px;
+  }
+  
+  .roommate-card {
+    padding: 18px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .add-button:hover,
+  .remove-button:hover,
+  .roommate-card:hover,
+  .add-roommate-form input:focus {
+    transform: none !important;
+  }
+  
+  .add-button:active,
+  .remove-button:active {
+    transform: scale(0.98) !important;
+  }
+  
+  /* Larger touch targets for mobile */
+  .add-button,
+  .remove-button,
+  .add-roommate-form input {
+    min-height: 44px;
+  }
+  
+  .avatar-with-name {
+    gap: 15px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .section-container {
+    background: #2c3e50;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .section-container h2 {
+    color: #ffffff;
+    border-bottom-color: rgba(52, 152, 219, 0.4);
+  }
+  
+  .add-roommate-form input {
+    background: #34495e;
+    border-color: #4a6572;
+    color: #ecf0f1;
+  }
+  
+  .add-roommate-form input:focus {
+    border-color: #4CAF50;
+    background: #2c3e50;
+  }
+  
+  .add-roommate-form input::placeholder {
+    color: #95a5a6;
+  }
+  
+  .roommate-card {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+  }
+  
+  .roommate-card:nth-child(odd) {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+  }
+  
+  .roommate-card:nth-child(even) {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+  }
+  
+  .roommate-card:nth-child(3n) {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+  }
+  
+  .roommate-card:nth-child(4n) {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+  }
+  
+  .avatar-with-name span {
+    color: #ecf0f1;
+  }
+  
+  .empty-state {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    border-color: #4a6572;
+  }
+  
+  .empty-state p {
+    color: #bdc3c7;
+  }
+  
+  .empty-state .hint {
+    color: #95a5a6;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .add-button,
+  .remove-button {
+    border: 2px solid #ffffff;
+  }
+  
+  .roommate-card {
+    border-width: 2px;
+  }
+  
+  .add-roommate-form input {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .add-button,
+  .remove-button,
+  .roommate-card,
+  .add-roommate-form input,
+  .avatar {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .add-button:hover,
+  .remove-button:hover,
+  .roommate-card:hover,
+  .add-roommate-form input:focus {
+    transform: none !important;
+  }
+  
+  .avatar {
+    transform: none !important;
+  }
+}
