@@ -38,7 +38,8 @@ import {
   FaExchangeAlt
 } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://newroomback-production.up.railway.app/api';
+
 
 const RoommateExpenseTracker = () => {
   const navigate = useNavigate();
