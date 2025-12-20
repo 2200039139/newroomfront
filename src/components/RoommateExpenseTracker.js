@@ -35,7 +35,8 @@ import {
   FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
-  FaExchangeAlt
+  FaExchangeAlt,
+   FaPlus 
 } from 'react-icons/fa';
 
 const API_URL = 'https://newroomback-production.up.railway.app/api';
