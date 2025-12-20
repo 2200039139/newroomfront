@@ -51,7 +51,8 @@ const RoommateExpenseTracker = () => {
   const [splits, setSplits] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [showQuickActions, setShowQuickActions] = useState(false);
+
   const [newRoommate, setNewRoommate] = useState('');
   const [newExpense, setNewExpense] = useState({
     description: '',
