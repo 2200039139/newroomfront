@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { FiArrowLeft, FiInfo, FiMail, FiLock, FiCheckCircle, FiUsers } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiArrowLeft, FiInfo, FiMail, FiLock, FiCheckCircle } from 'react-icons/fi';
 import { AiOutlineRocket } from 'react-icons/ai';
 import './Lg.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,96 +14,17 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
-  const [invitationMessage, setInvitationMessage] = useState('');
-  const [pendingInvitationToken, setPendingInvitationToken] = useState('');
 
-  // Check for pending invitations and location state
+  // Check if user is already logged in
   useEffect(() => {
-    console.log('=== LOGIN PAGE MOUNTED ===');
-    console.log('Location state:', location.state);
-    
-    // Check if user is already logged in
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     
     if (token && user) {
-      console.log('User already logged in, checking for pending invitation...');
-      
-      // Check for pending invitation
-      const pendingToken = localStorage.getItem('pending_invitation_token');
-      if (pendingToken) {
-        console.log('Found pending invitation, redirecting to accept:', pendingToken);
-        navigate(`/accept-invitation/${pendingToken}`, { 
-          replace: true,
-          state: { fromLogin: true }
-        });
-        return;
-      }
-      
-      // Normal redirect to dashboard
-      navigate('/dashboard', { replace: true });
-      return;
+      console.log('User already logged in, redirecting to dashboard');
+      navigate('/dashboard');
     }
-
-    // Check for pending invitation from localStorage
-    const pendingToken = localStorage.getItem('pending_invitation_token');
-    const invitationEmail = localStorage.getItem('pending_invitation_email');
-    
-    if (pendingToken) {
-      console.log('Found pending invitation in localStorage:', pendingToken);
-      setPendingInvitationToken(pendingToken);
-      
-      // Pre-fill email if available and form is empty
-      if (invitationEmail && !formData.email) {
-        setFormData(prev => ({ ...prev, email: invitationEmail }));
-      }
-      
-      // Show invitation message
-      setInvitationMessage(`You have a pending invitation for ${invitationEmail || 'an expense group'}. Login to accept.`);
-    }
-    
-    // Also check location state from invitation redirect
-    const locationState = location.state;
-    if (locationState?.fromInvitation) {
-      console.log('Login page accessed from invitation redirect');
-      
-      if (locationState.invitationEmail && !formData.email) {
-        setFormData(prev => ({ ...prev, email: locationState.invitationEmail }));
-      }
-      
-      if (locationState.invitationToken) {
-        setPendingInvitationToken(locationState.invitationToken);
-        // Store in localStorage if not already there
-        if (!localStorage.getItem('pending_invitation_token')) {
-          localStorage.setItem('pending_invitation_token', locationState.invitationToken);
-        }
-        if (locationState.invitationEmail && !localStorage.getItem('pending_invitation_email')) {
-          localStorage.setItem('pending_invitation_email', locationState.invitationEmail);
-        }
-      }
-      
-      setInvitationMessage('Please login to accept your invitation.');
-    }
-    
-    // Check sessionStorage as well
-    const sessionInvitation = sessionStorage.getItem('pending_invitation');
-    if (sessionInvitation) {
-      try {
-        const invitation = JSON.parse(sessionInvitation);
-        console.log('Found session invitation:', invitation);
-        
-        if (invitation.email && !formData.email) {
-          setFormData(prev => ({ ...prev, email: invitation.email }));
-        }
-        
-        if (invitation.token && !pendingInvitationToken) {
-          setPendingInvitationToken(invitation.token);
-        }
-      } catch (err) {
-        console.error('Error parsing session invitation:', err);
-      }
-    }
-  }, [navigate, location]);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -149,9 +68,7 @@ const LoginPage = () => {
     }
     
     try {
-      console.log('=== ATTEMPTING LOGIN ===');
-      console.log('Email:', formData.email);
-      console.log('Pending invitation token:', pendingInvitationToken);
+      console.log('Attempting secure authentication...');
       
       const response = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
@@ -164,7 +81,7 @@ const LoginPage = () => {
         }),
       });
       
-      console.log('Login response status:', response.status);
+      console.log('Authentication response status:', response.status);
       
       // Handle non-JSON responses
       const contentType = response.headers.get('content-type');
@@ -175,7 +92,7 @@ const LoginPage = () => {
       }
       
       const data = await response.json();
-      console.log('Login response data:', data);
+      console.log('Authentication response data:', data);
       
       if (!response.ok) {
         throw new Error(data.error || `Authentication failed (Status: ${response.status})`);
@@ -193,45 +110,16 @@ const LoginPage = () => {
       localStorage.setItem('user', JSON.stringify(data.data.user));
       localStorage.setItem('token', data.data.token);
       
-      // Save remember me preference
+      // Save remember me preference with comment
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
-        console.log('Remember me preference saved');
+        console.log('Remember me preference saved for future sessions');
       } else {
         localStorage.removeItem('rememberMe');
       }
       
-      console.log('=== LOGIN SUCCESSFUL ===');
-      console.log('User logged in:', data.data.user.email);
-      console.log('Token stored in localStorage');
-      
-      // Check for pending invitation after successful login
-      const pendingToken = localStorage.getItem('pending_invitation_token') || pendingInvitationToken;
-      
-      if (pendingToken) {
-        console.log('Processing pending invitation after successful login:', pendingToken);
-        
-        // Clear the pending invitation data
-        const invitationEmail = localStorage.getItem('pending_invitation_email');
-        localStorage.removeItem('pending_invitation_token');
-        localStorage.removeItem('pending_invitation_email');
-        sessionStorage.removeItem('pending_invitation');
-        
-        console.log('Redirecting back to accept invitation with fromLogin flag');
-        
-        // Redirect to accept invitation with fromLogin flag
-        navigate(`/accept-invitation/${pendingToken}`, { 
-          replace: true,
-          state: { 
-            fromLogin: true,  // This is the key flag
-            userEmail: data.data.user.email,
-            invitationEmail: invitationEmail
-          }
-        });
-      } else {
-        console.log('No pending invitation, redirecting to dashboard');
-        navigate('/dashboard', { replace: true });
-      }
+      console.log('Authentication successful! Redirecting to secure dashboard...');
+      navigate('/dashboard');
       
     } catch (err) {
       console.error('Authentication error details:', err);
@@ -239,15 +127,6 @@ const LoginPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleLoginWithoutInvitation = () => {
-    // Clear invitation data and proceed with normal login
-    localStorage.removeItem('pending_invitation_token');
-    localStorage.removeItem('pending_invitation_email');
-    sessionStorage.removeItem('pending_invitation');
-    setInvitationMessage('');
-    setPendingInvitationToken('');
   };
 
   return (
@@ -268,22 +147,6 @@ const LoginPage = () => {
             <p className="subtitle">
               Access your expense management dashboard to streamline shared living costs
             </p>
-            
-            {invitationMessage && (
-              <div className="invitation-alert">
-                <FiUsers className="invitation-icon" />
-                <div className="invitation-message">
-                  <strong>Pending Invitation</strong>
-                  <p>{invitationMessage}</p>
-                  <button 
-                    onClick={handleLoginWithoutInvitation}
-                    className="skip-invitation-btn"
-                  >
-                    Skip invitation & login normally
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
           
           {error && (
@@ -397,11 +260,6 @@ const LoginPage = () => {
                 <>
                   <span className="spinner" aria-hidden="true"></span>
                   <span>Signing in...</span>
-                </>
-              ) : invitationMessage ? (
-                <>
-                  <FiUsers className="button-icon" />
-                  <span>Login & Accept Invitation</span>
                 </>
               ) : (
                 <>
