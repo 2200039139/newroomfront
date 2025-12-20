@@ -1053,47 +1053,77 @@ const RoommateExpenseTracker = () => {
           )}
         </div>
         
-        {/* Quick Action Buttons */}
-        <div className="quick-actions">
-          <button 
-            className="quick-action-btn"
-            onClick={() => handleTabChange('expenses')}
-            title="Add Expense"
-          >
-            <FaReceipt />
-          </button>
-          <button 
-            className="quick-action-btn"
-            onClick={() => handleTabChange('roommates')}
-            title="Add Roommate"
-          >
-            <FaUserPlus />
-          </button>
-          <button 
-            className="quick-action-btn"
-            onClick={() => handleTabChange('splits')}
-            title="View Balances"
-          >
-            <FaBalanceScale />
-          </button>
-          <button 
-            className="quick-action-btn"
-            onClick={() => handleTabChange('settlements')}
-            title="Settlements"
-          >
-            <FaExchangeAlt />
-          </button>
-          <button 
-            className="quick-action-btn"
-            onClick={handleRefresh}
-            title="Refresh Data"
-          >
-            <FaSync className={isRefreshing ? 'spin' : ''} />
-          </button>
-        </div>
-      </div>
-    </div>
+        <div className={`quick-actions ${showQuickActions ? 'open' : ''}`}>
 
+  {/* + Toggle Button */}
+  <button
+    className="quick-action-btn fab-toggle"
+    onClick={() => setShowQuickActions(prev => !prev)}
+    title="Quick Actions"
+  >
+    <FaPlus />
+  </button>
+
+  {showQuickActions && (
+    <>
+      <button
+        className="quick-action-btn"
+        onClick={() => {
+          handleTabChange('expenses');
+          setShowQuickActions(false);
+        }}
+        title="Add Expense"
+      >
+        <FaReceipt />
+      </button>
+
+      <button
+        className="quick-action-btn"
+        onClick={() => {
+          handleTabChange('roommates');
+          setShowQuickActions(false);
+        }}
+        title="Add Roommate"
+      >
+        <FaUserPlus />
+      </button>
+
+      <button
+        className="quick-action-btn"
+        onClick={() => {
+          handleTabChange('splits');
+          setShowQuickActions(false);
+        }}
+        title="View Balances"
+      >
+        <FaBalanceScale />
+      </button>
+
+      <button
+        className="quick-action-btn"
+        onClick={() => {
+          handleTabChange('settlements');
+          setShowQuickActions(false);
+        }}
+        title="Settlements"
+      >
+        <FaExchangeAlt />
+      </button>
+
+      <button
+        className="quick-action-btn"
+        onClick={() => {
+          handleRefresh();
+          setShowQuickActions(false);
+        }}
+        title="Refresh Data"
+      >
+        <FaSync className={isRefreshing ? 'spin' : ''} />
+      </button>
+    </>
+  )}
+
+</div>
   );
 };
 
