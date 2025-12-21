@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { formatCurrency } from '../utils/currency';
 import { FaHistory, FaExchangeAlt, FaFilter, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 import './settlements.css';
@@ -17,11 +17,7 @@ const SettlementsSection = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedSettlement, setSelectedSettlement] = useState(null);
-
-  // Get today's date
-  const getTodayDate = () => {
-    return new Date().toISOString().split('T')[0];
-  };
+  const [displayedSettlements, setDisplayedSettlements] = useState([]);
 
   // Calculate pending settlements
   const pendingSettlements = useMemo(() => {
@@ -33,17 +29,18 @@ const SettlementsSection = ({
       toName: suggestion.toName,
       amount: suggestion.amount,
       status: 'pending',
-      date: getTodayDate(),
+      date: new Date().toISOString().split('T')[0],
       description: 'Pending settlement'
     }));
   }, [paymentSuggestions]);
 
   // Calculate completed settlements
   const completedSettlements = useMemo(() => {
-    return settlements.map(s => ({
+    return settlements.map((s, index) => ({
       ...s,
+      id: s.id || `completed-${index}-${s.fromId}-${s.toId}`,
       status: 'completed',
-      date: s.date || getTodayDate()
+      date: s.date || new Date().toISOString().split('T')[0]
     }));
   }, [settlements]);
 
@@ -52,83 +49,74 @@ const SettlementsSection = ({
     return [...pendingSettlements, ...completedSettlements];
   }, [pendingSettlements, completedSettlements]);
 
-  // Filter settlements function - FIXED FILTER LOGIC
-  const filterSettlements = () => {
-    let filtered = allSettlements;
+  // Apply filters
+  useEffect(() => {
+    let result = allSettlements;
 
-    // Apply status filter - FIXED: Check for exact status match
+    // Apply status filter
     if (filterType === 'pending') {
-      filtered = filtered.filter(settlement => settlement.status === 'pending');
+      result = result.filter(item => item.status === 'pending');
     } else if (filterType === 'completed') {
-      filtered = filtered.filter(settlement => settlement.status === 'completed');
+      result = result.filter(item => item.status === 'completed');
     }
-    // If filterType is 'all', keep all settlements
 
     // Apply search filter
     if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(settlement => {
-        const fromName = settlement.fromName?.toLowerCase() || '';
-        const toName = settlement.toName?.toLowerCase() || '';
-        return fromName.includes(searchLower) || toName.includes(searchLower);
-      });
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(item => 
+        item.fromName?.toLowerCase().includes(term) || 
+        item.toName?.toLowerCase().includes(term)
+      );
     }
 
     // Apply date filter
     if (dateFilter !== 'all') {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
-      filtered = filtered.filter(settlement => {
-        if (!settlement.date) return false;
+      result = result.filter(item => {
+        if (!item.date) return false;
         
-        try {
-          const settlementDate = new Date(settlement.date);
-          if (isNaN(settlementDate.getTime())) return false;
-          
-          const settlementDay = new Date(
-            settlementDate.getFullYear(), 
-            settlementDate.getMonth(), 
-            settlementDate.getDate()
-          );
-          
-          if (dateFilter === 'week') {
-            const weekAgo = new Date(today);
-            weekAgo.setDate(today.getDate() - 7);
-            return settlementDay >= weekAgo;
-          } else if (dateFilter === 'month') {
-            const monthAgo = new Date(today);
-            monthAgo.setMonth(today.getMonth() - 1);
-            return settlementDay >= monthAgo;
-          }
-        } catch (error) {
-          return false;
+        const itemDate = new Date(item.date);
+        itemDate.setHours(0, 0, 0, 0);
+        
+        if (dateFilter === 'week') {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(today.getDate() - 7);
+          return itemDate >= weekAgo;
+        } else if (dateFilter === 'month') {
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(today.getMonth() - 1);
+          return itemDate >= monthAgo;
         }
-        
         return true;
       });
     }
 
-    return filtered;
-  };
+    // Sort by date (newest first) and then by status (pending first)
+    result.sort((a, b) => {
+      // Sort by status: pending first
+      if (a.status === 'pending' && b.status === 'completed') return -1;
+      if (a.status === 'completed' && b.status === 'pending') return 1;
+      
+      // Then sort by date (newest first)
+      const dateA = new Date(a.date || 0);
+      const dateB = new Date(b.date || 0);
+      return dateB - dateA;
+    });
 
-  // Get filtered settlements
-  const filteredSettlements = filterSettlements();
-
-  // Sort settlements by date (newest first)
-  const sortedSettlements = [...filteredSettlements].sort((a, b) => {
-    const dateA = new Date(a.date || 0);
-    const dateB = new Date(b.date || 0);
-    return dateB - dateA;
-  });
+    setDisplayedSettlements(result);
+  }, [allSettlements, filterType, searchTerm, dateFilter]);
 
   // Calculate statistics
-  const settlementStats = {
-    total: completedSettlements.length,
-    pending: pendingSettlements.length,
-    totalAmount: completedSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0),
-    pendingAmount: pendingSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0)
-  };
+  const settlementStats = useMemo(() => {
+    return {
+      total: completedSettlements.length,
+      pending: pendingSettlements.length,
+      totalAmount: completedSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0),
+      pendingAmount: pendingSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0)
+    };
+  }, [completedSettlements, pendingSettlements]);
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -146,10 +134,11 @@ const SettlementsSection = ({
       if (isNaN(date.getTime())) return dateString;
       
       const today = new Date();
-      const todayFormatted = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const dateFormatted = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      today.setHours(0, 0, 0, 0);
+      const compareDate = new Date(date);
+      compareDate.setHours(0, 0, 0, 0);
       
-      if (dateFormatted.getTime() === todayFormatted.getTime()) {
+      if (compareDate.getTime() === today.getTime()) {
         return 'Today';
       }
       
@@ -170,13 +159,20 @@ const SettlementsSection = ({
       if (isNaN(date.getTime())) return false;
       
       const today = new Date();
-      const todayFormatted = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const dateFormatted = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      today.setHours(0, 0, 0, 0);
+      const compareDate = new Date(date);
+      compareDate.setHours(0, 0, 0, 0);
       
-      return dateFormatted.getTime() === todayFormatted.getTime();
+      return compareDate.getTime() === today.getTime();
     } catch (error) {
       return false;
     }
+  };
+
+  // Handle settle now - auto-populate names
+  const handleSettleNow = (fromId, toId, fromName, toName, amount) => {
+    // Call the parent function with auto-populated data
+    onOpenSettleModal(fromId, toId, fromName, toName, amount);
   };
 
   // Check if any filter is active
@@ -192,7 +188,7 @@ const SettlementsSection = ({
         <div className="header-actions">
           <button 
             className="btn-primary"
-            onClick={() => onOpenSettleModal('', '')}
+            onClick={() => onOpenSettleModal('', '', '', '', '')}
           >
             <span className="button-icon">+</span>
             Record Settlement
@@ -349,7 +345,7 @@ const SettlementsSection = ({
         </div>
         
         <div className="list-content">
-          {sortedSettlements.length === 0 ? (
+          {displayedSettlements.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📊</div>
               <p className="empty-text">
@@ -368,7 +364,7 @@ const SettlementsSection = ({
               )}
             </div>
           ) : (
-            sortedSettlements.map((settlement, index) => (
+            displayedSettlements.map((settlement, index) => (
               <div key={settlement.id || index} className={`settlement-row ${settlement.status}`}>
                 <div className="settlement-cell">
                   <div className="user-info">
@@ -415,7 +411,13 @@ const SettlementsSection = ({
                       <button
                         type="button"
                         className="action-btn settle-btn"
-                        onClick={() => onOpenSettleModal(settlement.fromId, settlement.toId)}
+                        onClick={() => handleSettleNow(
+                          settlement.fromId, 
+                          settlement.toId,
+                          settlement.fromName,
+                          settlement.toName,
+                          settlement.amount
+                        )}
                       >
                         Settle Now
                       </button>
