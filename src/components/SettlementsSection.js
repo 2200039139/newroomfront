@@ -6,7 +6,7 @@ import './settlements.css';
 const SettlementsSection = ({
   roommates,
   expenses,
-  settlements = [], // Added default value
+  settlements = [],
   splits,
   paymentSuggestions = [],
   onOpenSettleModal,
@@ -18,13 +18,12 @@ const SettlementsSection = ({
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedSettlement, setSelectedSettlement] = useState(null);
 
-  // Memoized today's date to avoid recreating on every render
-  const todayDate = useMemo(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  }, []);
+  // Get today's date
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
 
-  // Memoized pending settlements with stable IDs
+  // Calculate pending settlements
   const pendingSettlements = useMemo(() => {
     return paymentSuggestions.map(suggestion => ({
       id: `pending-${suggestion.fromId}-${suggestion.toId}`,
@@ -34,97 +33,102 @@ const SettlementsSection = ({
       toName: suggestion.toName,
       amount: suggestion.amount,
       status: 'pending',
-      date: todayDate
+      date: getTodayDate(),
+      description: 'Pending settlement'
     }));
-  }, [paymentSuggestions, todayDate]);
+  }, [paymentSuggestions]);
 
-  // Memoized completed settlements with stable IDs
+  // Calculate completed settlements
   const completedSettlements = useMemo(() => {
-    return settlements.map((s, index) => ({
+    return settlements.map(s => ({
       ...s,
-      id: s.id || `completed-${index}-${s.fromId}-${s.toId}`,
       status: 'completed',
-      date: s.date || s.createdAt || todayDate
+      date: s.date || getTodayDate()
     }));
-  }, [settlements, todayDate]);
+  }, [settlements]);
 
-  // Memoized all settlements (combined)
+  // Combine all settlements
   const allSettlements = useMemo(() => {
     return [...pendingSettlements, ...completedSettlements];
   }, [pendingSettlements, completedSettlements]);
 
-  // Memoized filtered settlements
-  const filteredSettlements = useMemo(() => {
-    // Return early if no settlements
-    if (allSettlements.length === 0) return [];
+  // Filter settlements function - FIXED FILTER LOGIC
+  const filterSettlements = () => {
+    let filtered = allSettlements;
 
-    let result = allSettlements;
-
-    // Status filter
-    if (filterType !== 'all') {
-      result = result.filter(settlement => settlement.status === filterType);
+    // Apply status filter - FIXED: Check for exact status match
+    if (filterType === 'pending') {
+      filtered = filtered.filter(settlement => settlement.status === 'pending');
+    } else if (filterType === 'completed') {
+      filtered = filtered.filter(settlement => settlement.status === 'completed');
     }
+    // If filterType is 'all', keep all settlements
 
-    // Search filter
+    // Apply search filter
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase().trim();
-      result = result.filter(settlement => {
+      filtered = filtered.filter(settlement => {
         const fromName = settlement.fromName?.toLowerCase() || '';
         const toName = settlement.toName?.toLowerCase() || '';
         return fromName.includes(searchLower) || toName.includes(searchLower);
       });
     }
 
-    // Date filter
+    // Apply date filter
     if (dateFilter !== 'all') {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
-      result = result.filter(settlement => {
+      filtered = filtered.filter(settlement => {
         if (!settlement.date) return false;
         
-        const settlementDate = new Date(settlement.date);
-        const settlementDay = new Date(settlementDate.getFullYear(), settlementDate.getMonth(), settlementDate.getDate());
-        
-        if (dateFilter === 'week') {
-          const weekAgo = new Date(today);
-          weekAgo.setDate(today.getDate() - 7);
-          return settlementDay >= weekAgo;
-        } else if (dateFilter === 'month') {
-          const monthAgo = new Date(today);
-          monthAgo.setMonth(today.getMonth() - 1);
-          return settlementDay >= monthAgo;
+        try {
+          const settlementDate = new Date(settlement.date);
+          if (isNaN(settlementDate.getTime())) return false;
+          
+          const settlementDay = new Date(
+            settlementDate.getFullYear(), 
+            settlementDate.getMonth(), 
+            settlementDate.getDate()
+          );
+          
+          if (dateFilter === 'week') {
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            return settlementDay >= weekAgo;
+          } else if (dateFilter === 'month') {
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(today.getMonth() - 1);
+            return settlementDay >= monthAgo;
+          }
+        } catch (error) {
+          return false;
         }
         
         return true;
       });
     }
 
-    return result;
-  }, [allSettlements, filterType, searchTerm, dateFilter]);
+    return filtered;
+  };
 
-  // Memoized sorted settlements
-  const sortedSettlements = useMemo(() => {
-    return [...filteredSettlements].sort((a, b) => {
-      // Sort by status first (pending first), then by date (newest first)
-      if (a.status === 'pending' && b.status === 'completed') return -1;
-      if (a.status === 'completed' && b.status === 'pending') return 1;
-      
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [filteredSettlements]);
+  // Get filtered settlements
+  const filteredSettlements = filterSettlements();
 
-  // Memoized settlement statistics
-  const settlementStats = useMemo(() => {
-    return {
-      total: completedSettlements.length,
-      pending: pendingSettlements.length,
-      totalAmount: completedSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0),
-      pendingAmount: pendingSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0)
-    };
-  }, [completedSettlements, pendingSettlements]);
+  // Sort settlements by date (newest first)
+  const sortedSettlements = [...filteredSettlements].sort((a, b) => {
+    const dateA = new Date(a.date || 0);
+    const dateB = new Date(b.date || 0);
+    return dateB - dateA;
+  });
+
+  // Calculate statistics
+  const settlementStats = {
+    total: completedSettlements.length,
+    pending: pendingSettlements.length,
+    totalAmount: completedSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0),
+    pendingAmount: pendingSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0)
+  };
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -141,13 +145,14 @@ const SettlementsSection = ({
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
       
-      // If date is today, show "Today"
       const today = new Date();
-      if (date.toDateString() === today.toDateString()) {
+      const todayFormatted = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dateFormatted = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      if (dateFormatted.getTime() === todayFormatted.getTime()) {
         return 'Today';
       }
       
-      // Format as DD/MM/YYYY
       const day = date.getDate().toString().padStart(2, '0');
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const year = date.getFullYear();
@@ -162,15 +167,20 @@ const SettlementsSection = ({
     if (!dateString) return false;
     try {
       const date = new Date(dateString);
+      if (isNaN(date.getTime())) return false;
+      
       const today = new Date();
-      return date.toDateString() === today.toDateString();
+      const todayFormatted = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dateFormatted = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      return dateFormatted.getTime() === todayFormatted.getTime();
     } catch (error) {
       return false;
     }
   };
 
   // Check if any filter is active
-  const isAnyFilterActive = filterType !== 'all' || searchTerm || dateFilter !== 'all';
+  const isAnyFilterActive = filterType !== 'all' || searchTerm.trim() !== '' || dateFilter !== 'all';
 
   return (
     <div className={`section-container settlements-section ${viewMode === 'mobile' ? 'mobile-view' : ''}`}>
@@ -246,21 +256,21 @@ const SettlementsSection = ({
               className={`filter-btn ${filterType === 'all' ? 'active' : ''}`}
               onClick={() => setFilterType('all')}
             >
-              All
+              All ({allSettlements.length})
             </button>
             <button 
               type="button"
               className={`filter-btn ${filterType === 'pending' ? 'active' : ''}`}
               onClick={() => setFilterType('pending')}
             >
-              Pending
+              Pending ({pendingSettlements.length})
             </button>
             <button 
               type="button"
               className={`filter-btn ${filterType === 'completed' ? 'active' : ''}`}
               onClick={() => setFilterType('completed')}
             >
-              Completed
+              Completed ({completedSettlements.length})
             </button>
           </div>
         </div>
@@ -358,8 +368,8 @@ const SettlementsSection = ({
               )}
             </div>
           ) : (
-            sortedSettlements.map((settlement) => (
-              <div key={settlement.id} className={`settlement-row ${settlement.status}`}>
+            sortedSettlements.map((settlement, index) => (
+              <div key={settlement.id || index} className={`settlement-row ${settlement.status}`}>
                 <div className="settlement-cell">
                   <div className="user-info">
                     <div className="avatar">
@@ -387,7 +397,7 @@ const SettlementsSection = ({
                 <div className="settlement-cell">
                   <div className="date">
                     {formatDisplayDate(settlement.date)}
-                    {isToday(settlement.date) && (
+                    {settlement.status === 'pending' && isToday(settlement.date) && (
                       <span className="date-badge">Today</span>
                     )}
                   </div>
