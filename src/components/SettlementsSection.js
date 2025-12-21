@@ -9,17 +9,30 @@ const SettlementsSection = ({
   expenses,
   settlements,
   splits,
-  paymentSuggestions = [], // Fixed: Added default value
+  paymentSuggestions = [],
   onOpenSettleModal,
   setActiveTab,
   viewMode = 'desktop'
 }) => {
-  const [filterType, setFilterType] = useState('all'); // 'all', 'pending', 'completed'
+  const [filterType, setFilterType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('all'); // 'all', 'week', 'month', 'custom'
+  const [dateFilter, setDateFilter] = useState('all');
   const [selectedSettlement, setSelectedSettlement] = useState(null);
 
-  // Calculate pending settlements - FIXED: using paymentSuggestions prop
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // Get date X days ago
+  const getDateDaysAgo = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Calculate pending settlements
   const pendingSettlements = paymentSuggestions.map(suggestion => ({
     id: `pending-${suggestion.fromId}-${suggestion.toId}`,
     fromId: suggestion.fromId,
@@ -28,7 +41,7 @@ const SettlementsSection = ({
     toName: suggestion.toName,
     amount: suggestion.amount,
     status: 'pending',
-    date: new Date().toISOString().split('T')[0]
+    date: getTodayDate() // Use today's date for pending settlements
   }));
 
   // Combine pending and completed settlements
@@ -36,39 +49,53 @@ const SettlementsSection = ({
     ...pendingSettlements,
     ...settlements.map(s => ({
       ...s,
-      status: 'completed'
+      status: 'completed',
+      date: s.date || s.createdAt || getTodayDate() // Ensure date exists
     }))
   ];
 
-  // Filter settlements
-  const filteredSettlements = allSettlements.filter(settlement => {
+  // Filter settlements function
+  const filterSettlements = (settlement) => {
     // Status filter
     if (filterType === 'pending' && settlement.status !== 'pending') return false;
     if (filterType === 'completed' && settlement.status !== 'completed') return false;
     
     // Search filter
-    if (searchTerm && !settlement.fromName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !settlement.toName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
-    
-    // Date filter
-    if (dateFilter !== 'all') {
-      const settlementDate = new Date(settlement.date);
-      const now = new Date();
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const fromName = settlement.fromName?.toLowerCase() || '';
+      const toName = settlement.toName?.toLowerCase() || '';
       
-      if (dateFilter === 'week') {
-        const weekAgo = new Date();
-        weekAgo.setDate(now.getDate() - 7);
-        if (settlementDate < weekAgo) return false;
-      } else if (dateFilter === 'month') {
-        const monthAgo = new Date();
-        monthAgo.setMonth(now.getMonth() - 1);
-        if (settlementDate < monthAgo) return false;
+      if (!fromName.includes(searchLower) && !toName.includes(searchLower)) {
+        return false;
       }
     }
     
+    // Date filter
+    if (dateFilter !== 'all' && settlement.date) {
+      const settlementDate = new Date(settlement.date);
+      
+      if (dateFilter === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        if (settlementDate < weekAgo) return false;
+      } else if (dateFilter === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        if (settlementDate < monthAgo) return false;
+      }
+      // Note: For 'custom' date filter, you would need additional state for custom dates
+    }
+    
     return true;
+  };
+
+  // Apply filters
+  const filteredSettlements = allSettlements.filter(filterSettlements);
+
+  // Sort by date (newest first)
+  const sortedSettlements = [...filteredSettlements].sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
   });
 
   // Calculate settlement statistics
@@ -77,6 +104,13 @@ const SettlementsSection = ({
     pending: pendingSettlements.length,
     totalAmount: settlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0),
     pendingAmount: pendingSettlements.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0)
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilterType('all');
+    setSearchTerm('');
+    setDateFilter('all');
   };
 
   return (
@@ -140,12 +174,12 @@ const SettlementsSection = ({
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters Section */}
       <div className="filters-section">
         <div className="filter-group">
           <div className="filter-label">
             <FaFilter />
-            <span>Filter by Status</span>
+            <span>Status</span>
           </div>
           <div className="filter-buttons">
             <button 
@@ -205,7 +239,25 @@ const SettlementsSection = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
+          {searchTerm && (
+            <button 
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+            >
+              ×
+            </button>
+          )}
         </div>
+
+        {/* Clear All Filters Button */}
+        {(filterType !== 'all' || searchTerm || dateFilter !== 'all') && (
+          <button 
+            className="clear-all-filters"
+            onClick={clearAllFilters}
+          >
+            Clear All Filters
+          </button>
+        )}
       </div>
 
       {/* Settlements List */}
@@ -220,25 +272,19 @@ const SettlementsSection = ({
         </div>
         
         <div className="list-content">
-          {filteredSettlements.length === 0 ? (
+          {sortedSettlements.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📊</div>
               <p className="empty-text">No settlements found</p>
-              {filterType !== 'all' && (
-                <button 
-                  className="clear-filters"
-                  onClick={() => {
-                    setFilterType('all');
-                    setSearchTerm('');
-                    setDateFilter('all');
-                  }}
-                >
-                  Clear Filters
-                </button>
-              )}
+              <button 
+                className="clear-filters-btn"
+                onClick={clearAllFilters}
+              >
+                Clear Filters
+              </button>
             </div>
           ) : (
-            filteredSettlements.map((settlement, index) => (
+            sortedSettlements.map((settlement, index) => (
               <div key={settlement.id || index} className={`settlement-row ${settlement.status}`}>
                 <div className="settlement-cell">
                   <div className="user-info">
@@ -332,7 +378,7 @@ const SettlementsSection = ({
               <div className="detail-row">
                 <span className="detail-label">Status:</span>
                 <span className={`detail-value status ${selectedSettlement.status}`}>
-                  {selectedSettlement.status}
+                  {selectedSettlement.status === 'pending' ? 'Pending' : 'Completed'}
                 </span>
               </div>
               {selectedSettlement.description && (
