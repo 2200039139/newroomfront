@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatCurrency } from '../utils/currency';
-import { FaHistory, FaExchangeAlt, FaFilter, FaSearch, FaCalendarAlt } from 'react-icons/fa';
+import { FaHistory, FaExchangeAlt, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 import './settlements.css';
 
 const SettlementsSection = ({
@@ -13,7 +13,6 @@ const SettlementsSection = ({
   setActiveTab,
   viewMode = 'desktop'
 }) => {
-  const [filterType, setFilterType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedSettlement, setSelectedSettlement] = useState(null);
@@ -52,13 +51,6 @@ const SettlementsSection = ({
   // Apply filters
   useEffect(() => {
     let result = allSettlements;
-
-    // Apply status filter
-    if (filterType === 'pending') {
-      result = result.filter(item => item.status === 'pending');
-    } else if (filterType === 'completed') {
-      result = result.filter(item => item.status === 'completed');
-    }
 
     // Apply search filter
     if (searchTerm.trim()) {
@@ -106,7 +98,7 @@ const SettlementsSection = ({
     });
 
     setDisplayedSettlements(result);
-  }, [allSettlements, filterType, searchTerm, dateFilter]);
+  }, [allSettlements, searchTerm, dateFilter]);
 
   // Calculate statistics
   const settlementStats = useMemo(() => {
@@ -120,7 +112,6 @@ const SettlementsSection = ({
 
   // Clear all filters
   const clearAllFilters = () => {
-    setFilterType('all');
     setSearchTerm('');
     setDateFilter('all');
   };
@@ -176,7 +167,7 @@ const SettlementsSection = ({
   };
 
   // Check if any filter is active
-  const isAnyFilterActive = filterType !== 'all' || searchTerm.trim() !== '' || dateFilter !== 'all';
+  const isAnyFilterActive = searchTerm.trim() !== '' || dateFilter !== 'all';
 
   return (
     <div className={`section-container settlements-section ${viewMode === 'mobile' ? 'mobile-view' : ''}`}>
@@ -239,38 +230,8 @@ const SettlementsSection = ({
         </div>
       </div>
 
-      {/* Filters Section */}
+      {/* Filters Section - Only Date and Search remain */}
       <div className="filters-section">
-        <div className="filter-group">
-          <div className="filter-label">
-            <FaFilter />
-            <span>Status</span>
-          </div>
-          <div className="filter-buttons">
-            <button 
-              type="button"
-              className={`filter-btn ${filterType === 'all' ? 'active' : ''}`}
-              onClick={() => setFilterType('all')}
-            >
-              All ({allSettlements.length})
-            </button>
-            <button 
-              type="button"
-              className={`filter-btn ${filterType === 'pending' ? 'active' : ''}`}
-              onClick={() => setFilterType('pending')}
-            >
-              Pending ({pendingSettlements.length})
-            </button>
-            <button 
-              type="button"
-              className={`filter-btn ${filterType === 'completed' ? 'active' : ''}`}
-              onClick={() => setFilterType('completed')}
-            >
-              Completed ({completedSettlements.length})
-            </button>
-          </div>
-        </div>
-        
         <div className="filter-group">
           <div className="filter-label">
             <FaCalendarAlt />
