@@ -61,7 +61,7 @@ const SignupPage = () => {
     setError('');
     
     try {
-      const backendResponse = await fetch('https://newroomback-production.up.railway.app/api/users/google-auth', {
+      const backendResponse = await fetch('https://newroomback-production-5945.up.railway.app/api/users/google-auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const SignupPage = () => {
     }
     
     try {
-      const response = await fetch('https://newroomback-production.up.railway.app/api/users/register', {
+      const response = await fetch('https://newroomback-production-5945.up.railway.app/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
