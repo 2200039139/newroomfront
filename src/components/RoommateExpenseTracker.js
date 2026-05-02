@@ -39,7 +39,7 @@ import {
    FaPlus 
 } from 'react-icons/fa';
 
-const API_URL = 'https://newroomback-production.up.railway.app/api';
+const API_URL = 'https://newroomback-production-5945.up.railway.app/api';
 
 
 const RoommateExpenseTracker = () => {
