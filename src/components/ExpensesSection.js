@@ -152,7 +152,8 @@ const ExpensesSection = ({
         }
         break;
     }
-    
+    case 'default'    :
+        break;
     return { isValid, error, details, totalAllocated };
   };
   
@@ -216,6 +217,8 @@ const ExpensesSection = ({
           type: 'percentage',
           percentages: percentages
         };
+        break;
+      case 'default':
         break;
     }
     
