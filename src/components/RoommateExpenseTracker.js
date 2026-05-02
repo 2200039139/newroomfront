@@ -11,9 +11,9 @@ import Notification from './notifications';
 import { 
   generatePaymentSuggestions, 
   calculateOutstandingBalance,
-  calculateTotalOutstanding,
-  calculateTotalOwed,
-  calculateTotalPaid 
+  //calculateTotalOutstanding,
+  //calculateTotalOwed,
+  //calculateTotalPaid 
 } from '../utils/calculations';
 import { 
   FaUsers, 
@@ -21,7 +21,7 @@ import {
   FaBalanceScale, 
   FaHistory, 
   FaSignOutAlt,
-  FaPlusCircle,
+  //FaPlusCircle,
   FaUserPlus,
   FaChartPie,
   FaRupeeSign,
@@ -32,11 +32,11 @@ import {
   FaMobile,
   FaDesktop,
   FaSync,
-  FaFilter,
+  //FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
   FaExchangeAlt,
-   FaPlus 
+  // FaPlus 
 } from 'react-icons/fa';
 
 const API_URL = 'https://newroomback-production-5945.up.railway.app/api';
@@ -51,7 +51,7 @@ const RoommateExpenseTracker = () => {
   const [splits, setSplits] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showQuickActions, setShowQuickActions] = useState(false);
+  //const [showQuickActions, setShowQuickActions] = useState(false);
 
   const [newRoommate, setNewRoommate] = useState('');
   const [newExpense, setNewExpense] = useState({
