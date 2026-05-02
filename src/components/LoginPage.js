@@ -70,7 +70,7 @@ const LoginPage = () => {
     try {
       console.log('Attempting secure authentication...');
       
-      const response = await fetch('https://newroomback-production.up.railway.app/api/users/login', {
+      const response = await fetch('https://newroomback-production-5945.up.railway.app/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
