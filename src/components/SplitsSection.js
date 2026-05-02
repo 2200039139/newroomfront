@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUserCircle, FaArrowRight, FaCheckCircle, FaTimesCircle, FaInfoCircle } from 'react-icons/fa';
+import {  FaArrowRight, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 import './ss.css';
 
 const SplitsSection = ({ 
