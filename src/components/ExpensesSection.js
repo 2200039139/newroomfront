@@ -99,63 +99,66 @@ const ExpensesSection = ({
     let totalAllocated = 0;
     
     switch (splitType) {
-      case 'equal':
-        const equalShare = totalAmount / participants.length;
-        participants.forEach(participant => {
-          details.push({
-            id: participant.id,
-            name: participant.name,
-            share: equalShare,
-            type: 'equal'
-          });
-          totalAllocated += equalShare;
-        });
-        break;
-        
-      case 'exact':
-        participants.forEach(participant => {
-          const exactAmount = parseFloat(exactAmounts[participant.id]) || 0;
-          details.push({
-            id: participant.id,
-            name: participant.name,
-            share: exactAmount,
-            type: 'exact'
-          });
-          totalAllocated += exactAmount;
-        });
-        
-        if (Math.abs(totalAllocated - totalAmount) > 0.01) {
-          isValid = false;
-          error = `Total allocated (${formatCurrency(totalAllocated)}) doesn't match expense amount (${formatCurrency(totalAmount)})`;
-        }
-        break;
-        
-      case 'percentage':
-        let totalPercentage = 0;
-        participants.forEach(participant => {
-          const percentage = parseFloat(percentages[participant.id]) || 0;
-          totalPercentage += percentage;
-          const share = (totalAmount * percentage) / 100;
-          details.push({
-            id: participant.id,
-            name: participant.name,
-            share: share,
-            percentage: percentage,
-            type: 'percentage'
-          });
-          totalAllocated += share;
-        });
-        
-        if (Math.abs(totalPercentage - 100) > 0.01) {
-          isValid = false;
-          error = `Total percentage (${totalPercentage.toFixed(2)}%) doesn't equal 100%`;
-        }
-        break;
+  case 'equal':
+    const equalShare = totalAmount / participants.length;
+    participants.forEach(participant => {
+      details.push({
+        id: participant.id,
+        name: participant.name,
+        share: equalShare,
+        type: 'equal'
+      });
+      totalAllocated += equalShare;
+    });
+    break;
+
+  case 'exact':
+    participants.forEach(participant => {
+      const exactAmount = parseFloat(exactAmounts[participant.id]) || 0;
+      details.push({
+        id: participant.id,
+        name: participant.name,
+        share: exactAmount,
+        type: 'exact'
+      });
+      totalAllocated += exactAmount;
+    });
+
+    if (Math.abs(totalAllocated - totalAmount) > 0.01) {
+      isValid = false;
+      error = `Total allocated (${formatCurrency(totalAllocated)}) doesn't match expense amount (${formatCurrency(totalAmount)})`;
     }
-    default  :
-        break;
-    return { isValid, error, details, totalAllocated };
-  };
+    break;
+
+  case 'percentage':
+    let totalPercentage = 0;
+    participants.forEach(participant => {
+      const percentage = parseFloat(percentages[participant.id]) || 0;
+      totalPercentage += percentage;
+      const share = (totalAmount * percentage) / 100;
+
+      details.push({
+        id: participant.id,
+        name: participant.name,
+        share: share,
+        percentage: percentage,
+        type: 'percentage'
+      });
+
+      totalAllocated += share;
+    });
+
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+      isValid = false;
+      error = `Total percentage (${totalPercentage.toFixed(2)}%) doesn't equal 100%`;
+    }
+    break;
+
+  default:
+    break;
+}
+
+return { isValid, error, details, totalAllocated };
   
   // Auto-fill percentages for equal distribution
   const autoFillPercentages = () => {
