@@ -279,8 +279,8 @@ const SignupPage = () => {
       <span className="logo-highlight">Room</span>Expenses
     </div>
     <h3 className="headline">
-      <span className="headline-decoration">///</span> The Smarter Way to Split Expenses
-      <span className="headline-decoration">///</span>
+      The Smarter Way to Split Expenses
+
     </h3>
     
     <div className="results-stats">
