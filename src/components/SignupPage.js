@@ -54,7 +54,7 @@ const SignupPage = () => {
         document.body.removeChild(script);
       }
     };
-  }, []);
+  });
 
   const handleGoogleResponse = async (response) => {
     setIsLoading(true);
